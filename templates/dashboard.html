@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Premium Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #3D84C6;
+      --accent: #00b894;
+      --dark: #121212;
+      --glass: rgba(255, 255, 255, 0.05);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--dark);
+      color: #fff;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 4px 0 10px rgba(0,0,0,0.5);
+      animation: fadeSlideIn 0.5s ease forwards;
+    }
+
+    .sidebar .top {
+      flex-grow: 1;
+    }
+
+    .sidebar .top button,
+    .sidebar .top label {
+      all: unset;
+      display: block;
+      margin-bottom: 15px;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #3D84C6, #1e90ff);
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: 0.3s;
+    }
+
+    .sidebar .top button:hover,
+    .sidebar .top label:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, #53a0f8, #2563eb);
+    }
+
+    .logout-btn {
+      all: unset;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, #ff6b61, #e74c3c);
+    }
+
+    .sidebar input[type="file"] {
+      display: none;
+    }
+
+    /* Main */
+    .main {
+      flex: 1;
+      padding: 40px;
+      overflow-y: auto;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 25px;
+      font-weight: 700;
+    }
+
+    .video-card {
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      padding: 25px;
+      border-radius: 20px;
+      margin-bottom: 40px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    .process-btn {
+      position: absolute;
+      bottom: 25px;
+      right: 25px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, #00c97c, #00e38e);
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+      transition: 0.3s ease;
+    }
+
+    .process-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .frames {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .frames img {
+      width: calc(25% - 10px);
+      border-radius: 12px;
+      border: 1px solid var(--primary);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+
+    /* Profile Panel */
+    .profile-modal {
+      position: fixed;
+      left: -300px;
+      top: 0;
+      width: 300px;
+      height: 100%;
+      background: var(--glass);
+      backdrop-filter: blur(30px);
+      padding: 30px;
+      box-shadow: 4px 0 10px rgba(0,0,0,0.5);
+      transition: left 0.5s ease;
+    }
+
+    .profile-modal.active {
+      left: 250px;
+    }
+
+    .profile-modal h3 {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .profile-modal p {
+      font-size: 15px;
+      margin-bottom: 10px;
+      color: #ccc;
+    }
+
+    /* Animation */
+    @keyframes fadeSlideIn {
+      from {
+        transform: translateX(-100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .frames img {
+        width: 100%;
+      }
+
+      .sidebar {
+        width: 200px;
+      }
+
+      .profile-modal.active {
+        left: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="top">
+      <button id="profileBtn">👤 User Profile</button>
+      <label for="videoUpload">📤 Upload Video</label>
+      <input type="file" id="videoUpload" accept="video/*" />
+    </div>
+    <button class="logout-btn" onclick="logout()"><a href="{% url 'logout' %}">Logout</a></button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <h2>Your Dashboard</h2>
+    <div id="videoList"></div>
+  </div>
+
+  <!-- Profile Panel -->
+  <div class="profile-modal" id="profileModal">
+    <h3>User Profile</h3>
+    <p><strong>Name:</strong> {{ name }}</p>
+    <p><strong>Email:</strong> {{ email }}</p>
+    <p><strong>Member Since:</strong> {{ date_joined|date:"F j, Y" }}</p>
+  </div>
+
+  <script>
+    const profileBtn = document.getElementById("profileBtn");
+    const profileModal = document.getElementById("profileModal");
+    const videoUpload = document.getElementById("videoUpload");
+    const videoList = document.getElementById("videoList");
+
+    profileBtn.addEventListener("click", () => {
+      profileModal.classList.toggle("active");
+    });
+
+    videoUpload.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+
+        const card = document.createElement("div");
+        card.className = "video-card";
+        card.innerHTML = `
+          <video controls src="${url}"></video>
+          <button class="process-btn">Process</button>
+          <div class="frames"></div>
+        `;
+
+        videoList.appendChild(card);
+
+        const processBtn = card.querySelector(".process-btn");
+        const framesContainer = card.querySelector(".frames");
+
+        processBtn.addEventListener("click", () => {
+          framesContainer.innerHTML = "";
+          for (let i = 1; i <= 4; i++) {
+            const img = document.createElement("img");
+            img.src = `https://via.placeholder.com/150x90?text=Frame+\${i}`;
+            framesContainer.appendChild(img);
+          }
+        });
+      }
+    });
+
+    function logout() {
+      alert("Logging out...");
+      window.location.href = "login.html"; // Adjust path as needed
+    }
+  </script>
+</body>
+</html>
+
+
